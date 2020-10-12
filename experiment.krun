@@ -1,0 +1,129 @@
+# Krun config file for running the renaissance suite using Krun's
+# ExternalSuiteVMDef.
+#
+# Note that you will have to make the experiment directory world-writable since
+# the runner expects to make a temporary directory at runtime. Sadly we can't
+# grant only the Krun user this access prior to running the process executions,
+# as the pre-execution scripts run before the Krun user is created.
+
+import os
+import platform
+import sys
+from krun.vm_defs import SomVMDef
+from krun import EntryPoint
+
+DIR = os.getcwd()
+
+# Load auto-generated configuration snippet.
+sys.path.insert(0, DIR)
+
+YKSOM_BASELINE_BIN = os.path.join("yksom", "yksom_baseline", "release", "yksom")
+YKSOM_CUSTOM_RUSTC_BIN = os.path.join("yksom", "yksom_custom_rustc", "release", "yksom")
+SOM_CLASSPATH  = os.path.join("yksom", "SOM", "Smalltalk")
+LIBKRUN = os.path.join("krun", "libkrun")
+
+N_EXECUTIONS = 1
+ITERATIONS_ALL_VMS = 2
+
+MAIL_TO = ["jh@jakehughes.uk"]
+
+HEAP_LIMIT = 1024 * 1024 * 4
+STACK_LIMIT = 1024 * 1024 # 1GB
+EXECUTION_TIMEOUT = 60 * 60 * 15  # 15 hours.
+
+VARIANTS = {
+    "default-yksom": EntryPoint("KrunEntry.som"),
+}
+
+VMS = {
+    'yksom_baseline': {
+        'vm_def': SomVMDef(YKSOM_BASELINE_BIN, SOM_CLASSPATH, env={"LD_LIBRARY_PATH": LIBKRUN}),
+        'variants': ['default-yksom'],
+        'n_iterations': ITERATIONS_ALL_VMS,
+    },
+    'yksom_custom_rustc': {
+        'vm_def': SomVMDef(YKSOM_CUSTOM_RUSTC_BIN, SOM_CLASSPATH, env={"LD_LIBRARY_PATH": LIBKRUN}),
+        'variants': ['default-yksom'],
+        'n_iterations': ITERATIONS_ALL_VMS,
+    },
+}
+
+BENCHMARKS = {
+    'nbody': 1,
+    'delta_blue': 1,
+    'fannkuch': 1,
+    'fibonacci': 1,
+    'dispatch': 1,
+    'bounce': 1,
+    'loop': 1,
+    'permute': 1,
+    'queens': 1,
+    'list': 1,
+    'recurse': 1,
+    'storage': 1,
+    'sieve': 1,
+    'bubble_sort': 1,
+    'quick_sort': 1,
+    'sum': 1,
+    'towers': 1,
+    'tree_sort': 1,
+    'integer_loop': 1,
+    'field_loop': 1,
+    'while_loop': 1,
+    'mandelbrot': 1,
+}
+
+# Pre/post commands for a Debian 10 system using the default exim4 MTA for
+# sending mail. Ensure the system can send mail by configuring it as an
+# "internet site" with `sudo dpkg-reconfigure exim4-config`.
+#
+# Make sure the interfaces you want to be taken down are marked
+# `auto` in /etc/networking/interfaces otherwise ifup won't work.
+PING_HOST = "bencher8.soft-dev.org"
+PRE_EXECUTION_CMDS = [
+    "while true; do sudo ifdown -a; sleep 5; ping -q -c 10 %s || break; done" % PING_HOST,
+    "sudo systemctl stop cron",
+    "sudo systemctl stop exim4",
+
+    # systemd has lots of timers which could trigger mid-experiment. Kill them.
+    # Use `systemctl list-timers` to see what you can kill.
+    "sudo systemctl stop systemd-tmpfiles-clean.timer",
+    "sudo systemctl stop systemd-timesyncd.service",
+    "sudo systemctl stop apt-daily-upgrade.timer",
+    "sudo systemctl stop logrotate.timer",
+    "sudo systemctl stop man-db.timer",
+    "sudo systemctl stop apt-daily.service",
+
+    "sudo systemctl stop ssh",
+]
+
+POST_EXECUTION_CMDS = [
+    "while true; do ping -c 3 -q %s && break; sudo ifdown -a; sleep 5; sudo ifup -a; done" % PING_HOST,
+    "sudo systemctl start ssh || true",
+
+    "sudo systemctl stop apt-daily.service",
+    "sudo systemctl stop man-db.timer",
+    "sudo systemctl stop logrotate.timer",
+    "sudo systemctl stop apt-daily-upgrade.timer",
+    "sudo systemctl stop systemd-timesyncd.service",
+    "sudo systemctl stop systemd-tmpfiles-clean.timer",
+
+    "sudo systemctl start cron || true",
+    "sudo systemctl start exim4 || true",
+    "sudo systemctl start systemd-tmpfiles-clean.timer || true",
+
+    # Pause to (force) send any mail that Krun may have generated.
+    "sudo exim4 -qff || true",
+]
+
+# Result copy-off.
+HOSTNAME = platform.node().split(".")[0]
+REMOTE_LOGIN = "jhughes@bencher8.soft-dev.org"
+REMOTE_DIR = "research/krun_results/"
+SSH_BATCH = "ssh -o 'BatchMode yes' -i id_rsa"
+
+SCP_CMD = ("tar czf - ${KRUN_RESULTS_FILE} ${KRUN_LOG_FILE} ${KRUN_MANIFEST_FILE} | "
+           "%s %s 'cat > %s/%s.tgz'" %
+           (SSH_BATCH, REMOTE_LOGIN, REMOTE_DIR, HOSTNAME))
+POST_EXECUTION_CMDS.append(
+    "%s || ( sleep 2; %s ) || true " % (SCP_CMD, SCP_CMD))

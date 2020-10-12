@@ -1,0 +1,9 @@
+KrunEntry = (
+    run_iter: args = (
+        | bench innerIterations |
+        bench := DeltaBlue new.
+        bench oneTimeSetup.
+        innerIterations := (args at: 2) asInteger.
+        bench innerBenchmarkLoop: innerIterations.
+    )
+)
