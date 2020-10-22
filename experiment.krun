@@ -77,6 +77,10 @@ BENCHMARKS = {
     'field_loop': 10,
     'while_loop': 15,
     'mandelbrot': 50,
+    'richards': 1,
+    'json_small': 1,
+    'graph_search': 5,
+    'page_rank': 50,
 }
 
 # Pre/post commands for a Debian 10 system using the default exim4 MTA for

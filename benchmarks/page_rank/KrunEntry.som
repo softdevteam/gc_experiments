@@ -1,0 +1,8 @@
+KrunEntry = (
+    run_iter: n = (
+        | bench |
+        bench := PageRank new.
+        bench oneTimeSetup.
+        bench innerBenchmarkLoop: n.
+    )
+)
