@@ -17,13 +17,16 @@ DIR = os.getcwd()
 # Load auto-generated configuration snippet.
 sys.path.insert(0, DIR)
 
+# Executables
 YKSOM_BASELINE_BIN = os.path.join("yksom", "yksom_baseline", "release", "yksom")
 YKSOM_CUSTOM_RUSTC_BIN = os.path.join("yksom", "yksom_custom_rustc", "release", "yksom")
-SOM_CLASSPATH  = os.path.join("yksom", "SOM", "Smalltalk")
-LIBKRUN = os.path.join("krun", "libkrun")
 
-N_EXECUTIONS = 1
-ITERATIONS_ALL_VMS = 2
+# Classpaths
+SOM_STD_LIB  = os.path.join("yksom", "SOM", "Smalltalk")
+SOM_BENCHMARK_DIR  = os.path.join("yksom", "SOM", "Examples", "Benchmarks")
+SOM_BENCHMARK_SUBDIRS = [os.path.join(SOM_BENCHMARK_DIR, d) for d in os.listdir(SOM_BENCHMARK_DIR) \
+                            if os.path.isdir(os.path.join(SOM_BENCHMARK_DIR, d))]
+SOM_CLASSPATHS = [SOM_STD_LIB, SOM_BENCHMARK_DIR] +  SOM_BENCHMARK_SUBDIRS
 
 MAIL_TO = ["jh@jakehughes.uk"]
 
@@ -37,12 +40,12 @@ VARIANTS = {
 
 VMS = {
     'yksom_baseline': {
-        'vm_def': SomVMDef(YKSOM_BASELINE_BIN, SOM_CLASSPATH, env={"LD_LIBRARY_PATH": LIBKRUN}),
+        'vm_def': SomVMDef(YKSOM_BASELINE_BIN, SOM_CLASSPATHS, env={"LD_LIBRARY_PATH": LIBKRUN}),
         'variants': ['default-yksom'],
         'n_iterations': ITERATIONS_ALL_VMS,
     },
     'yksom_custom_rustc': {
-        'vm_def': SomVMDef(YKSOM_CUSTOM_RUSTC_BIN, SOM_CLASSPATH, env={"LD_LIBRARY_PATH": LIBKRUN}),
+        'vm_def': SomVMDef(YKSOM_CUSTOM_RUSTC_BIN, SOM_CLASSPATHS, env={"LD_LIBRARY_PATH": LIBKRUN}),
         'variants': ['default-yksom'],
         'n_iterations': ITERATIONS_ALL_VMS,
     },
