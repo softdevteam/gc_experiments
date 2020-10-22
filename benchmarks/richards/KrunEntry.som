@@ -1,7 +1,7 @@
 KrunEntry = (
     run_iter: n = (
         | bench |
-        bench := Loop new.
+        bench := Richards new.
         bench innerBenchmarkLoop: n.
     )
 )

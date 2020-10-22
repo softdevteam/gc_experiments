@@ -1,9 +1,8 @@
 KrunEntry = (
-    run_iter: args = (
-        | bodies innerIterations |
+    run_iter: n = (
+        | bodies |
         Body initialize.
         bodies := NBodySystem new.
-        innerIterations := (args at: 2) asInteger.
-        innerIterations timesRepeat: [ bodies advance: 0.01 ].
+        n timesRepeat: [ bodies advance: 0.01 ].
     )
 )

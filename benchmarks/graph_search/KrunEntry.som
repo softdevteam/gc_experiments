@@ -1,7 +1,8 @@
 KrunEntry = (
     run_iter: n = (
         | bench |
-        bench := Loop new.
+        bench := GraphSearch new.
+        bench oneTimeSetup.
         bench innerBenchmarkLoop: n.
     )
 )

@@ -1,8 +1,7 @@
 KrunEntry = (
-    run_iter: args = (
-        | bench innerIterations |
+    run_iter: n = (
+        | bench |
         bench := List new.
-        innerIterations := (args at: 2) asInteger.
-        bench innerBenchmarkLoop: innerIterations.
+        bench innerBenchmarkLoop: n.
     )
 )
