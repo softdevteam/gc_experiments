@@ -28,6 +28,9 @@ SOM_BENCHMARK_SUBDIRS = [os.path.join(SOM_BENCHMARK_DIR, d) for d in os.listdir(
                             if os.path.isdir(os.path.join(SOM_BENCHMARK_DIR, d))]
 SOM_CLASSPATHS = [SOM_STD_LIB, SOM_BENCHMARK_DIR] +  SOM_BENCHMARK_SUBDIRS
 
+N_EXECUTIONS = 30
+ITERATIONS_ALL_VMS = 2000
+
 MAIL_TO = ["jh@jakehughes.uk"]
 
 HEAP_LIMIT = 1024 * 1024 * 4
