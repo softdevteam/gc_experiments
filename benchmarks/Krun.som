@@ -1,0 +1,7 @@
+Krun = (
+    krunInit = primitive
+    krunDone = primitive
+    krunGetNumCores = primitive
+    krunMeasure: idx = primitive
+    krunGetWallclock: idx = primitive
+)
